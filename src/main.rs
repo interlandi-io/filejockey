@@ -1,11 +1,12 @@
 use frizbee::{Config, Scoring, match_list_parallel};
 use std::error::Error;
-use std::{fs, fs::{DirEntry}};
+use std::{fs};
 use std::env;
 use std::path::MAIN_SEPARATOR_STR;
 use std::path::{Path, PathBuf};
 
 const N_THREADS: usize = 4;
+const SKIP_DIRS: &[&str] = &["node_modules", ".git", "target", "dist", ".next", "build"];
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     let argv: Vec<String> = env::args().collect();
@@ -49,21 +50,19 @@ pub fn best_match<'a>(needle: &str, haystacks: &'a [PathBuf]) -> Option<usize> {
 }
 
 pub fn ls_dirs_recurse(path: &Path, out: &mut Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
-    let entries = fs::read_dir(path)?.collect::<Result<Vec<DirEntry>, std::io::Error>>()?;
-    let mut dirs: Vec<PathBuf> = entries
-        .iter()
-        .filter_map(|e| if e.file_type().ok()?.is_dir() {
-            Some(e.path().clone()) 
-        } else {
-            None 
-        })
-        .collect();
-
-    for dir in &dirs {
-        ls_dirs_recurse(dir, out)?;
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if !entry.file_type()?.is_dir() {
+            continue;
+        }
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if SKIP_DIRS.contains(&&*name) || name.starts_with('.') {
+            continue;
+        }
+        ls_dirs_recurse(&path, out)?;
+        out.push(path);
     }
-
-    out.append(&mut dirs);
-
     Ok(())
 }
