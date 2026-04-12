@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 const N_THREADS: usize = 4;
 const SKIP_DIRS: &[&str] = &["node_modules", ".git", "target", "dist", ".next", "build"];
 
-pub fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let argv: Vec<String> = env::args().collect();
     let needle = argv.get(1).unwrap();
 
@@ -23,7 +23,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn best_match<'a>(needle: &str, haystacks: &'a [PathBuf]) -> Option<usize> {
+fn best_match<'a>(needle: &str, haystacks: &'a [PathBuf]) -> Option<usize> {
     let haystacks: Vec<&str> = haystacks.iter()
         .map(|p| p.to_str().unwrap()) // Note: panics if path is not UTF-8
         .collect();
@@ -49,7 +49,7 @@ pub fn best_match<'a>(needle: &str, haystacks: &'a [PathBuf]) -> Option<usize> {
     results.get(0).map(|m| m.index as usize)
 }
 
-pub fn ls_dirs_recurse(path: &Path, out: &mut Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
+fn ls_dirs_recurse(path: &Path, out: &mut Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
