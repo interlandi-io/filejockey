@@ -41,5 +41,5 @@ Then add the init script to your shell RC.
 
 ```bash
 # zsh
-filejockey --init > ~/.zshrc
+filejockey --init >> ~/.zshrc
 ```
